@@ -143,8 +143,8 @@ alias tw='tmux-sessionizer'
 bindkey -s '^f' '^utw\n'
 
 # ---- AI CLI shortcuts (permission prompts skipped — use with care) ----
-alias c='claude --dangerously-skip-permissions'
-alias cc='claude --continue --dangerously-skip-permissions'
+alias c='claude --dangerously-skip-permissions --effort max'
+alias cc='claude --continue --dangerously-skip-permissions --effort max'
 alias co='codex --yolo'
 alias coc='codex resume --last --yolo'
 
