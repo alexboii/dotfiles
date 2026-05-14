@@ -21,24 +21,27 @@ set -e
 # Roots to scan for worktrees. Anything containing a `.git` (file or dir) within
 # MAX_DEPTH levels is treated as a candidate. Missing paths (e.g. unmounted
 # volumes) are silently skipped, and grouping dirs without `.git` are ignored.
+# The find prunes the worktree itself once `.git` is found, so we never descend
+# into node_modules / build outputs.
 ROOTS=(
     "$HOME/wt"
     "/Volumes/PRO-G40"
     # "/Volumes/Modafinil"
 )
-MAX_DEPTH=5
+MAX_DEPTH=4
+
+candidates() {
+    for root in "${ROOTS[@]}"; do
+        [[ -d "$root" ]] || continue
+        find "$root" -maxdepth "$MAX_DEPTH" -type d \
+            -exec test -e {}/.git \; -print -prune 2>/dev/null
+    done
+}
 
 if [[ $# -eq 1 ]]; then
     selected="$1"
 else
-    candidates=()
-    for root in "${ROOTS[@]}"; do
-        [[ -d "$root" ]] || continue
-        while IFS= read -r gitref; do
-            candidates+=("$(dirname "$gitref")")
-        done < <(find "$root" -maxdepth "$MAX_DEPTH" -name .git -prune 2>/dev/null)
-    done
-    selected=$(printf '%s\n' "${candidates[@]}" | fzf)
+    selected=$(candidates | fzf)
 fi
 
 [[ -z "$selected" ]] && exit 0
