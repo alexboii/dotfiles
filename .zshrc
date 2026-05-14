@@ -144,8 +144,9 @@ alias twa='tmux -CC attach -t work'    # re-attach to the work session
 bindkey -s '^f' '^utw\n'
 
 # ---- AI CLI shortcuts (permission prompts skipped — use with care) ----
-alias c='claude --dangerously-skip-permissions --effort max'
-alias cc='claude --continue --dangerously-skip-permissions --effort max'
+export CLAUDE_CODE_EFFORT_LEVEL=max
+alias c='claude --dangerously-skip-permissions'
+alias cc='claude --continue --dangerously-skip-permissions'
 alias co='codex --yolo'
 alias coc='codex resume --last --yolo'
 
