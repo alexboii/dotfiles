@@ -33,6 +33,16 @@ create_symlink "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 create_symlink "$DOTFILES_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 create_symlink "$DOTFILES_DIR/.aerospace.toml" "$HOME/.aerospace.toml"
 
+# Link bin/ scripts into ~/bin
+if [ -d "$DOTFILES_DIR/bin" ]; then
+    mkdir -p "$HOME/bin"
+    for script in "$DOTFILES_DIR/bin"/*; do
+        [ -f "$script" ] || continue
+        chmod +x "$script"
+        create_symlink "$script" "$HOME/bin/$(basename "$script")"
+    done
+fi
+
 echo ""
 echo "Dotfiles installed successfully!"
 echo "Restart your terminal or run 'source ~/.zshrc' to apply changes."

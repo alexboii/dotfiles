@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# tmux-sessionizer: pick a worktree (or pass one), open it as a tmux session
+# with a 3-pane layout, and switch/attach.
+#
+# Layout:
+#   +--------+--------+
+#   | pane 1 |        |
+#   +--------+ pane 3 |
+#   | pane 2 |        |
+#   +--------+--------+
+#
+# Usage:
+#   tmux-sessionizer                # fzf-pick from ROOTS below
+#   tmux-sessionizer /path/to/dir   # open the given directory directly
+#
+# Inspired by ThePrimeagen's tmux-sessionizer.
+
+set -e
+
+# Roots to scan for worktrees. Anything containing a `.git` (file or dir) within
+# MAX_DEPTH levels is treated as a candidate. Missing paths (e.g. unmounted
+# volumes) are silently skipped, and grouping dirs without `.git` are ignored.
+ROOTS=(
+    "$HOME/wt"
+    "/Volumes/PRO-G40"
+    # "/Volumes/Modafinil"
+)
+MAX_DEPTH=5
+
+if [[ $# -eq 1 ]]; then
+    selected="$1"
+else
+    candidates=()
+    for root in "${ROOTS[@]}"; do
+        [[ -d "$root" ]] || continue
+        while IFS= read -r gitref; do
+            candidates+=("$(dirname "$gitref")")
+        done < <(find "$root" -maxdepth "$MAX_DEPTH" -name .git -prune 2>/dev/null)
+    done
+    selected=$(printf '%s\n' "${candidates[@]}" | fzf)
+fi
+
+[[ -z "$selected" ]] && exit 0
+
+session=$(basename "$selected" | tr ' .' '__')
+running=$(pgrep tmux || true)
+
+build_layout() {
+    local s="$1" d="$2"
+    tmux new-session  -ds "$s" -c "$d"
+    tmux split-window -h  -t "$s" -c "$d"
+    tmux select-pane      -t "$s:0.0"
+    tmux split-window -v  -t "$s" -c "$d"
+    tmux select-pane      -t "$s:0.0"
+}
+
+if [[ -z "${TMUX:-}" && -z "$running" ]]; then
+    build_layout "$session" "$selected"
+    exec tmux attach -t "$session"
+fi
+
+if ! tmux has-session -t="$session" 2>/dev/null; then
+    build_layout "$session" "$selected"
+fi
+
+if [[ -z "${TMUX:-}" ]]; then
+    exec tmux attach -t "$session"
+else
+    exec tmux switch-client -t "$session"
+fi

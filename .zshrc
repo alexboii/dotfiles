@@ -135,5 +135,12 @@ export NVM_DIR="$HOME/.nvm"
 # Added by Antigravity
 export PATH="/Users/sasha/.antigravity/antigravity/bin:$PATH"
 
+# ---- dotfiles bin ----
+export PATH="$HOME/bin:$PATH"
+alias tw='tmux-sessionizer'
+
+# Ctrl-F from any shell prompt → tmux-sessionizer picker
+bindkey -s '^f' '^utw\n'
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
