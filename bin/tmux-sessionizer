@@ -61,20 +61,41 @@ build_panes() {
     tmux select-pane     -t "${target}.0"
 }
 
-if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-    # First time: start the session with this worktree as window 1
-    tmux new-session -ds "$SESSION" -n "$window_name" -c "$selected"
+if tmux has-session -t "$SESSION" 2>/dev/null \
+   && tmux list-windows -t "$SESSION" -F '#W' | grep -qx "$window_name"; then
+    # Window already exists — just jump to it.
+    tmux select-window -t "$SESSION:$window_name"
+
+elif [[ -n "${TMUX:-}" ]] \
+   && [[ "$(tmux display-message -p '#{session_name}')" == "$SESSION" ]] \
+   && [[ "$(tmux display-message -p '#{window_panes}')" == "1" ]]; then
+    # We're inside the work session, in a fresh 1-pane window (e.g. just made
+    # via Cmd+T → "New tmux Tab"). Convert THIS window into the worktree
+    # layout instead of opening another one.
+    win_id=$(tmux display-message -p '#{window_id}')
+    tmux rename-window -t "$win_id" "$window_name"
+    printf -v esc '%q' "$selected"
+    tmux send-keys -t "$win_id" "cd $esc && clear" Enter
+    build_panes "$win_id" "$selected"
+
+else
+    # Create a fresh window (bootstrap the session if it doesn't exist yet).
+    if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+        tmux new-session -ds "$SESSION" -n "$window_name" -c "$selected"
+    else
+        tmux new-window -t "$SESSION" -n "$window_name" -c "$selected"
+    fi
     build_panes "$SESSION:$window_name" "$selected"
-elif ! tmux list-windows -t "$SESSION" -F '#W' | grep -qx "$window_name"; then
-    # Session exists, window doesn't — append it
-    tmux new-window -t "$SESSION" -n "$window_name" -c "$selected"
-    build_panes "$SESSION:$window_name" "$selected"
+    tmux select-window -t "$SESSION:$window_name"
 fi
 
-tmux select-window -t "$SESSION:$window_name"
-
 if [[ -z "${TMUX:-}" ]]; then
-    exec tmux attach -t "$SESSION"
-else
-    exec tmux switch-client -t "$SESSION"
+    # In iTerm2, use -CC so each tmux window appears as an iTerm tab.
+    if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then
+        exec tmux -CC attach -t "$SESSION"
+    else
+        exec tmux attach -t "$SESSION"
+    fi
+elif [[ "$(tmux display-message -p '#{session_name}')" != "$SESSION" ]]; then
+    exec tmux switch-client -t "$SESSION:$window_name"
 fi
