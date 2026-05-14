@@ -39,7 +39,11 @@ candidates() {
 }
 
 if [[ $# -eq 1 ]]; then
-    selected="$1"
+    # Shortcut aliases. Add more `<name>) selected="<path>" ;;` lines as needed.
+    case "$1" in
+        main) selected="$HOME/housing_cloud/web" ;;
+        *)    selected="$1" ;;
+    esac
 else
     selected=$(candidates | fzf)
 fi
