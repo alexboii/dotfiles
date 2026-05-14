@@ -138,6 +138,7 @@ export PATH="/Users/sasha/.antigravity/antigravity/bin:$PATH"
 # ---- dotfiles bin ----
 export PATH="$HOME/bin:$PATH"
 alias tw='tmux-sessionizer'
+alias twa='tmux -CC attach -t work'    # re-attach to the work session
 
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
 bindkey -s '^f' '^utw\n'
