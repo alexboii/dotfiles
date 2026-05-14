@@ -142,5 +142,11 @@ alias tw='tmux-sessionizer'
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
 bindkey -s '^f' '^utw\n'
 
+# ---- AI CLI shortcuts (permission prompts skipped — use with care) ----
+alias c='claude --dangerously-skip-permissions'
+alias cc='claude --continue --dangerously-skip-permissions'
+alias co='codex --yolo'
+alias coc='codex resume --last --yolo'
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
