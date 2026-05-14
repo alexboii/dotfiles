@@ -32,6 +32,7 @@ create_symlink() {
 create_symlink "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 create_symlink "$DOTFILES_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 create_symlink "$DOTFILES_DIR/.aerospace.toml" "$HOME/.aerospace.toml"
+create_symlink "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 
 # Link bin/ scripts into ~/bin
 if [ -d "$DOTFILES_DIR/bin" ]; then
