@@ -150,5 +150,17 @@ alias cc='claude --continue --dangerously-skip-permissions'
 alias co='codex --yolo'
 alias coc='codex resume --last --yolo'
 
+# ---- Recover from a vanished cwd (e.g. external volume ejected) ----
+# Runs before each prompt: if $PWD no longer exists, bounce to home and warn.
+autoload -Uz add-zsh-hook
+_recover_cwd() {
+    if [[ ! -d "$PWD" ]]; then
+        local stale="$PWD"
+        cd ~
+        print -P "%F{yellow}⚠%f cwd was gone ($stale) — bounced to ~"
+    fi
+}
+add-zsh-hook precmd _recover_cwd
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
