@@ -92,6 +92,12 @@ else
     tmux select-window -t "$SESSION:$window_name"
 fi
 
+# Remember the current worktree at session scope. New shells spawned in this
+# session (e.g. via iTerm Cmd+T → "New tmux Tab") will see TMUX_DEFAULT_DIR
+# in their environment; a snippet in ~/.zshrc cd's there if the new shell
+# would otherwise start in $HOME.
+tmux set-environment -t "$SESSION" "TMUX_DEFAULT_DIR" "$selected"
+
 if [[ -z "${TMUX:-}" ]]; then
     # In iTerm2, use -CC so each tmux window appears as an iTerm tab.
     if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then

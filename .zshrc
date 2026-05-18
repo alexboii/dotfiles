@@ -143,6 +143,12 @@ alias twa='tmux -CC attach -t work'    # re-attach to the work session
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
 bindkey -s '^f' '^utw\n'
 
+# Land new tmux tabs (e.g. iTerm Cmd+T) in the current worktree.
+# tmux-sessionizer sets TMUX_DEFAULT_DIR on the session.
+if [[ -n "$TMUX" && -n "$TMUX_DEFAULT_DIR" && -d "$TMUX_DEFAULT_DIR" && "$PWD" = "$HOME" ]]; then
+    cd "$TMUX_DEFAULT_DIR"
+fi
+
 # ---- AI CLI shortcuts (permission prompts skipped — use with care) ----
 export CLAUDE_CODE_EFFORT_LEVEL=max
 alias c='claude --dangerously-skip-permissions'
