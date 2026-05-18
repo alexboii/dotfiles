@@ -55,6 +55,9 @@ window_name=$(basename "$selected" | tr ' .' '__')
 
 build_panes() {
     local target="$1" dir="$2"
+    # Remember the worktree root on this window so new splits (and any other
+    # binding that wants it) can default to it instead of pane_current_path.
+    tmux set-option -w -t "$target" "@worktree-root" "$dir"
     tmux split-window -h -t "$target"   -c "$dir"
     tmux select-pane     -t "${target}.0"
     tmux split-window -v -t "$target"   -c "$dir"
