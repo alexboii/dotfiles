@@ -51,7 +51,11 @@ fi
 [[ -z "$selected" ]] && exit 0
 
 SESSION="work"
-window_name=$(basename "$selected" | tr ' .' '__')
+# Window name = shortened worktree path. Shows up in tmux status bar and as
+# the iTerm2 tab title, so each tab clearly identifies its worktree.
+# Replace $HOME → ~, then sanitize chars tmux doesn't like in names.
+window_name="${selected/#$HOME/~}"
+window_name=$(echo "$window_name" | tr ' .' '__')
 
 build_panes() {
     local target="$1" dir="$2"
