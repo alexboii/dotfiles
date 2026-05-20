@@ -44,6 +44,16 @@ if [ -d "$DOTFILES_DIR/bin" ]; then
     done
 fi
 
+# Clone tmux plugins (resurrect + continuum) for session persistence
+mkdir -p "$HOME/.tmux/plugins"
+for repo in tmux-resurrect tmux-continuum; do
+    dest="$HOME/.tmux/plugins/$repo"
+    if [ ! -d "$dest" ]; then
+        echo "Cloning $repo into $dest"
+        git clone --depth 1 "https://github.com/tmux-plugins/$repo" "$dest"
+    fi
+done
+
 echo ""
 echo "Dotfiles installed successfully!"
 echo "Restart your terminal or run 'source ~/.zshrc' to apply changes."
