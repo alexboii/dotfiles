@@ -138,7 +138,26 @@ export PATH="/Users/sasha/.antigravity/antigravity/bin:$PATH"
 # ---- dotfiles bin ----
 export PATH="$HOME/bin:$PATH"
 alias tw='tmux-sessionizer'
-alias twa='tmux -CC attach -t work'    # re-attach to the work session
+
+# Re-attach to the work session. After a reboot/crash the tmux server is dead,
+# so start it first (which lets tmux-continuum auto-restore the saved state),
+# wait briefly for the 'work' session to come back, then attach with -CC.
+twa() {
+    if ! tmux has-session -t work 2>/dev/null; then
+        tmux new-session -d -s _bootstrap 2>/dev/null   # start server → triggers continuum restore
+        local tries=0
+        while ! tmux has-session -t work 2>/dev/null && (( tries < 50 )); do
+            sleep 0.2
+            (( tries++ ))
+        done
+        tmux kill-session -t _bootstrap 2>/dev/null
+    fi
+    if tmux has-session -t work 2>/dev/null; then
+        tmux -CC attach -t work
+    else
+        echo "No 'work' session to restore. Start one with: tw <worktree>"
+    fi
+}
 
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
 bindkey -s '^f' '^utw\n'
