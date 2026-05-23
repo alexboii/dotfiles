@@ -144,19 +144,10 @@ alias tw='tmux-sessionizer'
 # wait briefly for the 'work' session to come back, then attach with -CC.
 unalias twa 2>/dev/null   # tolerate an old alias lingering in the current shell
 twa() {
-    if ! tmux has-session -t work 2>/dev/null; then
-        tmux new-session -d -s _bootstrap 2>/dev/null   # start server → triggers continuum restore
-        local tries=0
-        while ! tmux has-session -t work 2>/dev/null && (( tries < 50 )); do
-            sleep 0.2
-            (( tries++ ))
-        done
-        tmux kill-session -t _bootstrap 2>/dev/null
-    fi
     if tmux has-session -t work 2>/dev/null; then
         tmux -CC attach -t work
     else
-        echo "No 'work' session to restore. Start one with: tw <worktree>"
+        echo "No 'work' session running. Start one with: tw <worktree>"
     fi
 }
 
