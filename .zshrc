@@ -142,6 +142,7 @@ alias tw='tmux-sessionizer'
 # Re-attach to the work session. After a reboot/crash the tmux server is dead,
 # so start it first (which lets tmux-continuum auto-restore the saved state),
 # wait briefly for the 'work' session to come back, then attach with -CC.
+unalias twa 2>/dev/null   # tolerate an old alias lingering in the current shell
 twa() {
     if ! tmux has-session -t work 2>/dev/null; then
         tmux new-session -d -s _bootstrap 2>/dev/null   # start server → triggers continuum restore
