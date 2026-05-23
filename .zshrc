@@ -147,7 +147,36 @@ twa() {
     if tmux has-session -t work 2>/dev/null; then
         tmux -CC attach -t work
     else
-        echo "No 'work' session running. Start one with: tw <worktree>"
+        echo "No 'work' session running. Restore with: twr   (or start: tw <worktree>)"
+    fi
+}
+
+# Restore tabs after a reboot/crash: rebuild every previously-open worktree as
+# a window (fresh 3-pane layouts at the right dirs), then attach once. Reuses
+# the working `tw` path and builds everything BEFORE the -CC attach.
+unalias twr 2>/dev/null
+twr() {
+    if tmux has-session -t work 2>/dev/null; then
+        tmux -CC attach -t work
+        return
+    fi
+    local state_file="$HOME/.local/state/tw/worktrees"
+    if [[ ! -s "$state_file" ]]; then
+        echo "No saved worktrees to restore. Start one with: tw <worktree>"
+        return
+    fi
+    # Snapshot the list first — tmux-sessionizer rewrites this file as it builds
+    # each window, so reading from it directly would truncate the loop.
+    local worktrees wt
+    worktrees=$(cat "$state_file")
+    while IFS= read -r wt; do
+        [[ -n "$wt" && -d "$wt" ]] || continue
+        TW_NO_ATTACH=1 tmux-sessionizer "$wt"
+    done <<< "$worktrees"
+    if tmux has-session -t work 2>/dev/null; then
+        tmux -CC attach -t work
+    else
+        echo "Nothing restored (saved paths missing?). Start one with: tw <worktree>"
     fi
 }
 

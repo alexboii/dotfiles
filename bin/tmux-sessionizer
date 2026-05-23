@@ -102,6 +102,17 @@ fi
 # would otherwise start in $HOME.
 tmux set-environment -t "$SESSION" "TMUX_DEFAULT_DIR" "$selected"
 
+# Record the set of open worktrees so `twr` can rebuild the tabs after a
+# tmux server restart. Always recorded (even during a `twr` rebuild) so the
+# snapshot stays current and self-heals any worktree dirs that have vanished.
+state_dir="$HOME/.local/state/tw"
+mkdir -p "$state_dir"
+tmux list-windows -t "$SESSION" -F '#{@worktree-root}' 2>/dev/null \
+    | grep -v '^$' | sort -u > "$state_dir/worktrees"
+
+# Rebuild mode: the window is set up; the caller (twr) attaches once at the end.
+[[ -n "${TW_NO_ATTACH:-}" ]] && exit 0
+
 if [[ -z "${TMUX:-}" ]]; then
     # In iTerm2, use -CC so each tmux window appears as an iTerm tab.
     if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then
