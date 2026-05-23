@@ -54,6 +54,17 @@ for repo in tmux-resurrect tmux-continuum; do
     fi
 done
 
+# Install launchd agent: periodic tmux state save (timer backstop)
+PLIST_SRC="$DOTFILES_DIR/launchd/com.dotfiles.tmux-save.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.dotfiles.tmux-save.plist"
+if [ -f "$PLIST_SRC" ]; then
+    mkdir -p "$HOME/Library/LaunchAgents"
+    sed "s|__HOME__|$HOME|g" "$PLIST_SRC" > "$PLIST_DST"
+    launchctl unload "$PLIST_DST" 2>/dev/null || true
+    launchctl load "$PLIST_DST" 2>/dev/null || true
+    echo "Loaded launchd agent: com.dotfiles.tmux-save (saves every 60s)"
+fi
+
 echo ""
 echo "Dotfiles installed successfully!"
 echo "Restart your terminal or run 'source ~/.zshrc' to apply changes."
