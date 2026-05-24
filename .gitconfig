@@ -14,3 +14,11 @@
 
 [merge]
 	conflictStyle = zdiff3
+
+# difftastic — structural (AST) diffs, on demand. Delta stays the default for
+# `git diff`; these aliases swap in difft and override core.pager (delta would
+# otherwise try to re-parse difft's output and mangle it).
+[alias]
+	dft = -c diff.external='difft --color always' -c core.pager='less -RFX' diff
+	ds  = -c diff.external='difft --color always' -c core.pager='less -RFX' show --ext-diff
+	dl  = -c diff.external='difft --color always' -c core.pager='less -RFX' log -p --ext-diff
