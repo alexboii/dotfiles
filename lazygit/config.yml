@@ -1,0 +1,8 @@
+# lazygit config — render diffs through git-delta.
+# Tracked in ~/dotfiles/lazygit/config.yml, symlinked into place by install.sh.
+git:
+  paging:
+    colorArg: always
+    # --paging=never: lazygit does its own scrolling.
+    # delta picks up [delta] settings (line-numbers, side-by-side) from gitconfig.
+    pager: delta --dark --paging=never

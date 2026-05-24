@@ -33,6 +33,11 @@ create_symlink "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 create_symlink "$DOTFILES_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 create_symlink "$DOTFILES_DIR/.aerospace.toml" "$HOME/.aerospace.toml"
 create_symlink "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+create_symlink "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
+
+# lazygit config (macOS stores it under Application Support)
+mkdir -p "$HOME/Library/Application Support/lazygit"
+create_symlink "$DOTFILES_DIR/lazygit/config.yml" "$HOME/Library/Application Support/lazygit/config.yml"
 
 # Link bin/ scripts into ~/bin
 if [ -d "$DOTFILES_DIR/bin" ]; then
