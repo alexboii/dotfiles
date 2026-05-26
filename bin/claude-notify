@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Claude Code Notification hook — plays a sound and flags the current
+# tmux/iTerm tab so you can tell which session wants your attention.
+# Wired up in ~/.claude/settings.json under hooks.Notification; symlinked
+# to ~/bin by install.sh.
+
+sound="${CLAUDE_NOTIFY_SOUND:-/System/Library/Sounds/Glass.aiff}"
+[ -f "$sound" ] && afplay "$sound" >/dev/null 2>&1 &
+
+# Ring this pane's bell → tmux/iTerm marks the tab as needing attention.
+if [ -n "${TMUX_PANE:-}" ] && command -v tmux >/dev/null 2>&1; then
+    tty=$(tmux display-message -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null)
+    [ -n "$tty" ] && printf '\a' > "$tty" 2>/dev/null
+fi
+
+exit 0
