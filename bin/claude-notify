@@ -5,8 +5,9 @@
 # Wired up in ~/.claude/settings.json under hooks.Notification; symlinked
 # to ~/bin by install.sh.
 
-sound="${CLAUDE_NOTIFY_SOUND:-/System/Library/Sounds/Glass.aiff}"
-[ -f "$sound" ] && afplay "$sound" >/dev/null 2>&1 &
+sound="${CLAUDE_NOTIFY_SOUND:-$HOME/dotfiles/sounds/notify.mp3}"
+[ -f "$sound" ] || sound="/System/Library/Sounds/Glass.aiff"   # fallback if the custom file is missing
+afplay "$sound" >/dev/null 2>&1 &
 
 # Ring this pane's bell → tmux/iTerm marks the tab as needing attention.
 if [ -n "${TMUX_PANE:-}" ] && command -v tmux >/dev/null 2>&1; then
