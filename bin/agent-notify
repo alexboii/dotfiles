@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Claude Code Notification hook — plays a sound and flags the current
-# tmux/iTerm tab so you can tell which session wants your attention.
-# Wired up in ~/.claude/settings.json under hooks.Notification; symlinked
-# to ~/bin by install.sh.
+# Agent notification — plays a sound and flags the current tmux/iTerm tab so
+# you can tell which session wants your attention. Shared by:
+#   - Claude Code: ~/.claude/settings.json hooks (Notification + Stop)
+#   - Codex:       ~/.codex/config.toml  notify = ["~/bin/agent-notify"]
+# Symlinked to ~/bin by install.sh. Ignores any stdin/argv the agents pass.
 
-sound="${CLAUDE_NOTIFY_SOUND:-$HOME/dotfiles/sounds/notify.mp3}"
+sound="${AGENT_NOTIFY_SOUND:-$HOME/dotfiles/sounds/notify.mp3}"
 [ -f "$sound" ] || sound="/System/Library/Sounds/Glass.aiff"   # fallback if the custom file is missing
 afplay "$sound" >/dev/null 2>&1 &
 
