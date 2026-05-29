@@ -1,0 +1,40 @@
+# Ghostty config for cmux (com.cmuxterm.app). Managed in ~/dotfiles and
+# symlinked into place by install.sh. After editing, validate with:
+#   /Applications/cmux.app/Contents/Resources/bin/ghostty \
+#     +validate-config --config-file="$HOME/Library/Application Support/com.cmuxterm.app/config.ghostty"
+
+# ---- Font ----
+# MesloLGS NF is the Powerlevel10k-recommended Nerd Font (already in ~/Library/Fonts),
+# so prompt glyphs/powerline segments render correctly.
+font-family = MesloLGS NF
+font-size = 14
+font-thicken = true
+
+# ---- Theme ----
+# Follow the macOS light/dark appearance. Both themes ship with Ghostty/cmux.
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
+
+# ---- Window ----
+background-opacity = 0.96
+background-blur = true
+window-padding-x = 8
+window-padding-y = 8
+window-padding-balance = true
+mouse-hide-while-typing = true
+
+# ---- Cursor ----
+cursor-style = block
+cursor-style-blink = false
+
+# ---- Shell ----
+# zsh + Powerlevel10k. Let the prompt own the cursor shape (no-cursor).
+shell-integration = zsh
+shell-integration-features = no-cursor
+
+# ---- macOS keys ----
+# Option as Alt so word-wise motions and tmux/zsh meta bindings work.
+macos-option-as-alt = true
+
+# ---- Behaviour ----
+confirm-close-surface = false
+copy-on-select = clipboard

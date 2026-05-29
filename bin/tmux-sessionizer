@@ -18,25 +18,9 @@
 
 set -e
 
-# Roots to scan for worktrees. Anything containing a `.git` (file or dir) within
-# MAX_DEPTH levels is treated as a candidate. Missing paths (e.g. unmounted
-# volumes) are silently skipped, and grouping dirs without `.git` are ignored.
-# The find prunes the worktree itself once `.git` is found, so we never descend
-# into node_modules / build outputs.
-ROOTS=(
-    "$HOME/wt"
-    "/Volumes/PRO-G40"
-    # "/Volumes/Modafinil"
-)
-MAX_DEPTH=4
-
-candidates() {
-    for root in "${ROOTS[@]}"; do
-        [[ -d "$root" ]] || continue
-        find "$root" -maxdepth "$MAX_DEPTH" -type d \
-            -exec test -e {}/.git \; -print -prune 2>/dev/null
-    done
-}
+# Worktree roots live in the shared `worktree-candidates` script so that `tw`
+# (here) and `sw` (cmux, in ~/.zshrc) pick from the exact same list — edit the
+# roots there in one place.
 
 if [[ $# -eq 1 ]]; then
     # Shortcut aliases. Add more `<name>) selected="<path>" ;;` lines as needed.
@@ -45,7 +29,7 @@ if [[ $# -eq 1 ]]; then
         *)    selected="$1" ;;
     esac
 else
-    selected=$(candidates | fzf)
+    selected=$(worktree-candidates | fzf)
 fi
 
 [[ -z "$selected" ]] && exit 0
@@ -96,11 +80,9 @@ else
     tmux select-window -t "$SESSION:$window_name"
 fi
 
-# Remember the current worktree at session scope. New shells spawned in this
-# session (e.g. via iTerm Cmd+T → "New tmux Tab") will see TMUX_DEFAULT_DIR
-# in their environment; a snippet in ~/.zshrc cd's there if the new shell
-# would otherwise start in $HOME.
-tmux set-environment -t "$SESSION" "TMUX_DEFAULT_DIR" "$selected"
+# New shells in this session land in their own window's worktree root via the
+# per-window @worktree-root option (set in build_panes) — see the snippet in
+# ~/.zshrc. No session-wide default dir is needed.
 
 # Record the set of open worktrees so `twr` can rebuild the tabs after a
 # tmux server restart. Always recorded (even during a `twr` rebuild) so the

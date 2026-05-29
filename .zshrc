@@ -180,13 +180,59 @@ twr() {
     fi
 }
 
+# sw (search workspace) — like `tw`, but for cmux instead of tmux. fzf-pick a
+# worktree from the SAME list (worktree-candidates), then open it as a NEW cmux
+# workspace with a 3-pane layout (left column split in two, full-height pane on
+# the right):
+#   +--------+--------+
+#   | pane 1 |        |
+#   +--------+ pane 3 |
+#   | pane 2 |        |
+#   +--------+--------+
+# Run inside a cmux terminal — it drives cmux over its control socket.
+unalias sw 2>/dev/null
+sw() {
+    local cmux selected out ws
+    cmux=/Applications/cmux.app/Contents/Resources/bin/cmux
+    [[ -x "$cmux" ]] || cmux=cmux            # fall back to PATH inside cmux
+
+    selected=$(worktree-candidates | fzf) || return
+    [[ -n "$selected" ]] || return
+
+    # 1) New workspace rooted at the worktree; capture its ref from the output.
+    if ! out=$("$cmux" new-workspace --cwd "$selected" --name "${selected:t}" --focus true 2>&1); then
+        print -ru2 -- "sw: new-workspace failed (run sw inside a cmux terminal):"
+        print -ru2 -- "$out"
+        return 1
+    fi
+    ws=$(print -r -- "$out" | grep -oE 'workspace:[0-9]+' | head -1)
+    [[ -n "$ws" ]] || ws=$("$cmux" current-workspace 2>/dev/null | grep -oE 'workspace:[0-9]+' | head -1)
+    if [[ -z "$ws" ]]; then
+        print -ru2 -- "sw: couldn't parse the new workspace ref; raw output was:"
+        print -ru2 -- "$out"
+        return 1
+    fi
+
+    # 2) Layout: full-height pane on the right, then split the left pane in two.
+    "$cmux" new-split right --workspace "$ws" --focus false
+    "$cmux" new-split down  --workspace "$ws" --panel pane:1 --focus true
+}
+
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
 bindkey -s '^f' '^utw\n'
 
-# Land new tmux tabs (e.g. iTerm Cmd+T) in the current worktree.
-# tmux-sessionizer sets TMUX_DEFAULT_DIR on the session.
-if [[ -n "$TMUX" && -n "$TMUX_DEFAULT_DIR" && -d "$TMUX_DEFAULT_DIR" && "$PWD" = "$HOME" ]]; then
-    cd "$TMUX_DEFAULT_DIR"
+# Land new tmux panes/tabs in the CURRENT window's worktree root. Each worktree
+# window records its own root in the @worktree-root option (set per-window by
+# tmux-sessionizer), so a fresh pane resolves to *its* tab's worktree rather
+# than one session-wide default. Only fires when the shell would otherwise
+# start in $HOME (a new iTerm pane/tab via Cmd+D / Cmd+T), so it never fights an
+# intentional cd. show-options -w resolves the calling pane's own window.
+if [[ -n "$TMUX" && "$PWD" = "$HOME" ]]; then
+    _tw_root=$(tmux show-options -wqv @worktree-root 2>/dev/null)
+    if [[ -n "$_tw_root" && -d "$_tw_root" ]]; then
+        cd "$_tw_root"
+    fi
+    unset _tw_root
 fi
 
 # ---- AI CLI shortcuts (permission prompts skipped — use with care) ----

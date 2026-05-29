@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# worktree-candidates: print every worktree directory under the configured
+# roots — anything containing a `.git` (file or dir) within MAX_DEPTH levels.
+# Shared by `tw` (tmux-sessionizer) and `sw` (cmux) so both pick from the exact
+# same list; edit the roots here in one place. Missing roots (e.g. an unmounted
+# volume) are skipped silently, and the find prunes each worktree once `.git`
+# is found so we never descend into node_modules / build outputs.
+
+ROOTS=(
+    "$HOME/wt"
+    "/Volumes/PRO-G40"
+    # "/Volumes/Modafinil"
+)
+MAX_DEPTH=4
+
+for root in "${ROOTS[@]}"; do
+    [[ -d "$root" ]] || continue
+    find "$root" -maxdepth "$MAX_DEPTH" -type d \
+        -exec test -e {}/.git \; -print -prune 2>/dev/null
+done
+
+exit 0
