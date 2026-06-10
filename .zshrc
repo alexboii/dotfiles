@@ -192,30 +192,23 @@ twr() {
 # Run inside a cmux terminal — it drives cmux over its control socket.
 unalias sw 2>/dev/null
 sw() {
-    local cmux selected out ws
+    local cmux selected layout out
     cmux=/Applications/cmux.app/Contents/Resources/bin/cmux
     [[ -x "$cmux" ]] || cmux=cmux            # fall back to PATH inside cmux
 
     selected=$(worktree-candidates | fzf) || return
     [[ -n "$selected" ]] || return
 
-    # 1) New workspace rooted at the worktree; capture its ref from the output.
-    if ! out=$("$cmux" new-workspace --cwd "$selected" --name "${selected:t}" --focus true 2>&1); then
-        print -ru2 -- "sw: new-workspace failed (run sw inside a cmux terminal):"
-        print -ru2 -- "$out"
-        return 1
-    fi
-    ws=$(print -r -- "$out" | grep -oE 'workspace:[0-9]+' | head -1)
-    [[ -n "$ws" ]] || ws=$("$cmux" current-workspace 2>/dev/null | grep -oE 'workspace:[0-9]+' | head -1)
-    if [[ -z "$ws" ]]; then
-        print -ru2 -- "sw: couldn't parse the new workspace ref; raw output was:"
-        print -ru2 -- "$out"
-        return 1
-    fi
+    # Build the whole layout in one shot via cmux's documented layout JSON: a
+    # horizontal split (left column | full-height right) whose left column is
+    # split vertically into two. All three are plain terminals rooted at --cwd.
+    layout='{"direction":"horizontal","split":0.5,"children":[{"direction":"vertical","children":[{"pane":{"surfaces":[{"type":"terminal"}]}},{"pane":{"surfaces":[{"type":"terminal"}]}}]},{"pane":{"surfaces":[{"type":"terminal"}]}}]}'
 
-    # 2) Layout: full-height pane on the right, then split the left pane in two.
-    "$cmux" new-split right --workspace "$ws" --focus false
-    "$cmux" new-split down  --workspace "$ws" --panel pane:1 --focus true
+    if ! out=$("$cmux" new-workspace --cwd "$selected" --name "${selected:t}" --layout "$layout" --focus true 2>&1); then
+        print -ru2 -- "sw: cmux new-workspace failed (run sw inside a cmux terminal):"
+        print -ru2 -- "$out"
+        return 1
+    fi
 }
 
 # Ctrl-F from any shell prompt → tmux-sessionizer picker
@@ -236,7 +229,6 @@ if [[ -n "$TMUX" && "$PWD" = "$HOME" ]]; then
 fi
 
 # ---- AI CLI shortcuts (permission prompts skipped — use with care) ----
-export CLAUDE_CODE_EFFORT_LEVEL=max
 alias c='claude --dangerously-skip-permissions'
 alias cc='claude --continue --dangerously-skip-permissions'
 alias co='codex --yolo'
